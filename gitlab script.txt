@@ -1,0 +1,262 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS account
+             ECR
+             ECS / Cluster
+             EC2 instance
+             Load balancer
+             Proper IAMs
+             Security groups
+             VPN and subnet
+             Codepipeline : Code source, build and deploy
+             CloudFormation Templates for ECS Cluster, Task Definiton 
+ 
+1.Type         :AWS account creation
+  Description  :A container for our resources.using multiple accounts gives you built in securityboundaries
+
+2.Type                       : AWS::ECR::Repository
+Properties: 
+  EncryptionConfiguration    : EncryptionConfiguration 
+    
+  ImageScanningConfiguration :  ImageScanningConfiguration
+   
+  ImageTagMutability         : String
+  LifecyclePolicy            : LifecyclePolicy
+    
+  RepositoryName             : String
+  RepositoryPolicyText       : Json
+  Tags                       : Tag
+    
+3.  ECSCluster:
+    Type: AWS::ECS::Cluster
+     Properties:
+      ClusterName: !Ref EnvironmentName
+
+*******************************************
+Type: AWS::ECS::Cluster
+Properties: 
+  CapacityProviders: 
+    - String
+  ClusterName: String
+  ClusterSettings: 
+    - ClusterSettings
+  Configuration: 
+    ClusterConfiguration
+  DefaultCapacityProviderStrategy: 
+    - CapacityProviderStrategyItem
+  Tags: 
+    - Tag
+ 
+4. Description  : A sample template
+Resources:
+  MyEC2Instance: #An inline comment
+    Type: "AWS::EC2::Instance"
+    Properties: 
+      ImageId: "ami-0ff8a91507f77f867" #Another comment -- This is a Linux AMI
+      InstanceType: t2.micro
+      KeyName: testkey
+      BlockDeviceMappings:
+        -
+          DeviceName: /dev/sdm
+          Ebs:
+            VolumeType: io1
+            Iops: 200
+            DeleteOnTermination: false
+            VolumeSize: 20
+5.- 'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
+              - 'elasticloadbalancing:DeregisterTargets'
+              - 'elasticloadbalancing:Describe*'
+              - 'elasticloadbalancing:RegisterInstancesWithLoadBalancer'
+              - 'elasticloadbalancing:RegisterTargets'
+6.Type: AWS::IAM::Role
+Properties: 
+  AssumeRolePolicyDocument: Json
+  Description: String
+  ManagedPolicyArns: 
+    - String
+  MaxSessionDuration: Integer
+  Path: String
+  PermissionsBoundary: String
+  Policies: 
+    - Policy
+  RoleName: String
+  Tags: 
+    - Tag
+7.ContainerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Access to the ECS hosts that run containers
+      VpcId: !Ref 'VPC'
+
+8. SubnetConfig:
+    VPC:
+      CIDR: '10.0.0.0/16'
+    PublicOne:
+      CIDR: '10.0.0.0/24'
+    PublicTwo:
+      CIDR: '10.0.1.0/24'
+    PrivateOne:
+      CIDR: '10.0.2.0/24'
+    PrivateTwo:
+      CIDR: '10.0.3.0/24'
+Resources:
+  # VPC in which containers will be networked.
+  # It has two public subnets, and two private subnets.
+  # We distribute the subnets across the first two available subnets
+  # for the region, for high availability.
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      CidrBlock: !FindInMap ['SubnetConfig', 'VPC', 'CIDR']
+PublicSubnetOne:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+         Fn::Select:
+         - 0
+         - Fn::GetAZs: {Ref: 'AWS::Region'}
+      VpcId: !Ref 'VPC'
+      CidrBlock: !FindInMap ['SubnetConfig', 'PublicOne', 'CIDR']
+      MapPublicIpOnLaunch: true
+  PublicSubnetTwo:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+         Fn::Select:
+         - 1
+         - Fn::GetAZs: {Ref: 'AWS::Region'}
+      VpcId: !Ref 'VPC'
+      CidrBlock: !FindInMap ['SubnetConfig', 'PublicTwo', 'CIDR']
+      MapPublicIpOnLaunch: true
+PrivateSubnetOne:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+         Fn::Select:
+         - 0
+         - Fn::GetAZs: {Ref: 'AWS::Region'}
+      VpcId: !Ref 'VPC'
+      CidrBlock: !FindInMap ['SubnetConfig', 'PrivateOne', 'CIDR']
+  PrivateSubnetTwo:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+         Fn::Select:
+         - 1
+         - Fn::GetAZs: {Ref: 'AWS::Region'}
+      VpcId: !Ref 'VPC'
+      CidrBlock: !FindInMap ['SubnetConfig', 'PrivateTwo', 'CIDR']
+9.AppPipeline: 
+  Type: AWS::CodePipeline::Pipeline 
+  Properties: 
+    RoleArn:
+      Ref: CodePipelineServiceRole 
+    Stages: 
+      - 
+        Name: Source 
+        Actions: 
+          - 
+            Name: SourceAction
+            ActionTypeId: 
+              Category: Source 
+              Owner: AWS 
+              Version: 1 
+              Provider: S3 
+            OutputArtifacts: 
+              - 
+                Name: SourceOutput 
+            Configuration: 
+              S3Bucket: 
+                Ref: SourceS3Bucket 
+              S3ObjectKey: 
+                Ref: SourceS3ObjectKey 
+            RunOrder: 1 
+      - 
+        Name: Beta 
+        Actions: 
+          - 
+            Name: BetaAction 
+            InputArtifacts: 
+              -
+                Name: SourceOutput 
+            ActionTypeId: 
+              Category: Deploy 
+              Owner: AWS 
+              Version: 1 
+              Provider: CodeDeploy
+            Configuration: 
+              ApplicationName: 
+                Ref: ApplicationName 
+              DeploymentGroupName: 
+                Ref: DeploymentGroupName 
+            RunOrder: 1 
+      - 
+        Name: Release 
+        Actions: 
+          - 
+            Name: ReleaseAction
+            InputArtifacts: 
+              - 
+                Name: SourceOutput 
+            ActionTypeId: 
+              Category: Deploy 
+              Owner: AWS 
+              Version: 1
+              Provider: CodeDeploy 
+            Configuration: 
+              ApplicationName: 
+                Ref: ApplicationName
+              DeploymentGroupName: 
+                Ref: DeploymentGroupName 
+            RunOrder: 1 
+    ArtifactStore: 
+      Type: S3 
+      Location:
+        Ref: ArtifactStoreS3Location 
+      EncryptionKey:
+        Id: arn:aws:kms:useast-1:ACCOUNT-ID:key/KEY-ID
+        Type: KMS
+    DisableInboundStageTransitions: 
+      - 
+        StageName: Release 
+        Reason: "Disabling the transition until integration tests are completed"
+    Tags:
+      - Key: Project
+        Value: ProjectA
+      - Key: IsContainerBased
+        Value: 'true'
+
+10. Type: AWS::ECS::TaskDefinition
+Properties: 
+  ContainerDefinitions: 
+    - ContainerDefinition
+  Cpu: String
+  EphemeralStorage: 
+    EphemeralStorage
+  ExecutionRoleArn: String
+  Family: String
+  InferenceAccelerators: 
+    - InferenceAccelerator
+  IpcMode: String
+  Memory: String
+  NetworkMode: String
+  PidMode: String
+  PlacementConstraints: 
+    - TaskDefinitionPlacementConstraint
+  ProxyConfiguration: 
+    ProxyConfiguration
+  RequiresCompatibilities: 
+    - String
+  RuntimePlatform: 
+    RuntimePlatform
+  Tags: 
+    - Tag
+  TaskRoleArn: String
+  Volumes: 
+    - Volume
+
+
+
+ 
+ 
