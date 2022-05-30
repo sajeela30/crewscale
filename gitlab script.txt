@@ -1,5 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: AWS account
+#Description: AWS account
              ECR
              ECS / Cluster
              EC2 instance
@@ -10,10 +9,10 @@ Description: AWS account
              Codepipeline : Code source, build and deploy
              CloudFormation Templates for ECS Cluster, Task Definiton 
  
-1.Type         :AWS account creation
+#1.Type         :AWS account creation
   Description  :A container for our resources.using multiple accounts gives you built in securityboundaries
 
-2.Type                       : AWS::ECR::Repository
+#2.Type                       : AWS::ECR::Repository
 Properties: 
   EncryptionConfiguration    : EncryptionConfiguration 
     
@@ -26,7 +25,7 @@ Properties:
   RepositoryPolicyText       : Json
   Tags                       : Tag
     
-3.  ECSCluster:
+#3.  ECSCluster:
     Type: AWS::ECS::Cluster
      Properties:
       ClusterName: !Ref EnvironmentName
@@ -46,7 +45,7 @@ Properties:
   Tags: 
     - Tag
  
-4. Description  : A sample template
+#4. Description  : A sample template
 Resources:
   MyEC2Instance: #An inline comment
     Type: "AWS::EC2::Instance"
@@ -62,12 +61,12 @@ Resources:
             Iops: 200
             DeleteOnTermination: false
             VolumeSize: 20
-5.- 'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
+#5.'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
               - 'elasticloadbalancing:DeregisterTargets'
               - 'elasticloadbalancing:Describe*'
               - 'elasticloadbalancing:RegisterInstancesWithLoadBalancer'
               - 'elasticloadbalancing:RegisterTargets'
-6.Type: AWS::IAM::Role
+#6.Type: AWS::IAM::Role
 Properties: 
   AssumeRolePolicyDocument: Json
   Description: String
@@ -81,13 +80,13 @@ Properties:
   RoleName: String
   Tags: 
     - Tag
-7.ContainerSecurityGroup:
+#7.ContainerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Access to the ECS hosts that run containers
       VpcId: !Ref 'VPC'
 
-8. SubnetConfig:
+#8. SubnetConfig:
     VPC:
       CIDR: '10.0.0.0/16'
     PublicOne:
@@ -147,7 +146,7 @@ PrivateSubnetOne:
          - Fn::GetAZs: {Ref: 'AWS::Region'}
       VpcId: !Ref 'VPC'
       CidrBlock: !FindInMap ['SubnetConfig', 'PrivateTwo', 'CIDR']
-9.AppPipeline: 
+#9.AppPipeline: 
   Type: AWS::CodePipeline::Pipeline 
   Properties: 
     RoleArn:
@@ -227,7 +226,8 @@ PrivateSubnetOne:
       - Key: IsContainerBased
         Value: 'true'
 
-10. Type: AWS::ECS::TaskDefinition
+#10.Task Definition
+Type: AWS::ECS::TaskDefinition
 Properties: 
   ContainerDefinitions: 
     - ContainerDefinition
