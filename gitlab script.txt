@@ -9,10 +9,12 @@
              Codepipeline : Code source, build and deploy
              CloudFormation Templates for ECS Cluster, Task Definiton 
  
-#1.Type         :AWS account creation
+#1.Aws account creation
+Type         :AWS account creation
   Description  :A container for our resources.using multiple accounts gives you built in securityboundaries
 
-#2.Type                       : AWS::ECR::Repository
+#2.ECR
+Type                       : AWS::ECR::Repository
 Properties: 
   EncryptionConfiguration    : EncryptionConfiguration 
     
@@ -45,7 +47,8 @@ Properties:
   Tags: 
     - Tag
  
-#4. Description  : A sample template
+#4.EC2 instance
+Description  : A sample template
 Resources:
   MyEC2Instance: #An inline comment
     Type: "AWS::EC2::Instance"
@@ -61,12 +64,14 @@ Resources:
             Iops: 200
             DeleteOnTermination: false
             VolumeSize: 20
-#5.'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
+#5.ELB
+'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
               - 'elasticloadbalancing:DeregisterTargets'
               - 'elasticloadbalancing:Describe*'
               - 'elasticloadbalancing:RegisterInstancesWithLoadBalancer'
               - 'elasticloadbalancing:RegisterTargets'
-#6.Type: AWS::IAM::Role
+#6.IAM
+Type: AWS::IAM::Role
 Properties: 
   AssumeRolePolicyDocument: Json
   Description: String
@@ -80,13 +85,15 @@ Properties:
   RoleName: String
   Tags: 
     - Tag
-#7.ContainerSecurityGroup:
+#7.Security group
+ContainerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Access to the ECS hosts that run containers
       VpcId: !Ref 'VPC'
 
-#8. SubnetConfig:
+#8. VPC and Subnet
+SubnetConfig:
     VPC:
       CIDR: '10.0.0.0/16'
     PublicOne:
