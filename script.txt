@@ -1,3 +1,5 @@
+-------
+AWSTemplateFormatVersion: '03-06-2022'
 #Description: AWS account
              ECR
              ECS / Cluster
